@@ -1,4 +1,4 @@
-# MaeGeri
+# SubZero
 A free and open source vulnerability scanner based on python
 
 Pentesters do not like NASL (and shit they're right). Today, everyone (ok ok...many people) want to script in python.
