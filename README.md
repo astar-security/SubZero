@@ -22,3 +22,9 @@ The extended features will be:
 5) be able to attack modern infrastructures: docker (especially vulnerable intermediate layers), AWS, Azure, etc.
 
 Feel free to contact me at contact[at}astar{dot]services
+
+
+TODO:
+- include brutespray like with patator
+- include eyewitness like
+- include whatportis
