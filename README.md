@@ -6,7 +6,7 @@ OpenVas is currently far away from Nessus because its community is not as huge a
 
 Here, I propose to replace OpenVas with a better scanner, written in python for python exploits with python lovers.
 
-The main step are defined as:
+The main steps are defined as:
 1) create an universal vulnerability descriptor
 1) create an universal exploit plugin template
 2) create or use existing fingerprinters (TCP/UDP services, OS, framework, etc.) and associate with the CPE database
@@ -16,7 +16,7 @@ The main step are defined as:
 
 The extended features will be:
 1) a web crawler and a web intrusion engine wich associate flaws with CWE database (even if arachni and burp are so sweet)
-2) a network protocol scanner for detecting poor protocols (Netbios, LLMNR, ARP) and try some attacks
+2) a network protocol sniffer for detecting poor protocols (Netbios, LLMNR, ARP) and try some attacks
 3) a wifi scanner and attacker
 4) a complete active directory configuration scanner
 5) be able to attack modern infrastructures: docker (especially vulnerable intermediate layers), AWS, Azure, etc.
