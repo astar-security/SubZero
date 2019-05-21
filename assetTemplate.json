@@ -1,5 +1,10 @@
 {
 	"id":"an unique uuid",
+	"mac":"a main MAC address",
+	"additionnal mac":{
+		"a_mac":"another MAC address where the asset can be reached",
+		"a_mac":"another MAC address where the asset can be reached"
+	},
 	"ip":"a main IP address",
 	"additionnal ip":{
 		"a_ip":"another ip address where the asset can be reached",
@@ -24,7 +29,10 @@
 			},
 			"port":{
 				"type":"TCP or UDP",
-				"number":"the port number"
+				"number":"the port number",
+				"ttl":"time to live if TCP",
+				"winsize":"window size if TCP",
+				"id":"0, incremental or random if TCP"				
 			},
 			"protocols":{
 				"a_prot":"a protocol used by the application like: TLS, HTTP, SMTP, etc.",
