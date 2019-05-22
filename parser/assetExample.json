@@ -1,0 +1,53 @@
+{
+	"id":"615e0c0e-7bfb-11e9-9662-2016b91ec396",
+	"mac":{
+		"address":"00:50:56:B8:B8:61",
+		"manuf":"VMWare"
+	},
+	"additional mac":{},
+	"ipv4":{
+		"address":"10.11.1.5",
+		"location":"LAN"
+	},
+	"additional ip":{},
+	"fqdn":"alice.thinc.local",
+	"additional names":{
+		"name1":"ALICE"
+		},
+	"os":{
+		"cpe":"cpe:/o:microsoft:windows_xp::",
+		"desc":"Windows XP",
+		"os users":{
+			"o_user1":{
+				"name":"alice",
+				"priv":"no"
+			}
+		}
+	},
+	"applicative":{
+		"app1":{
+			"cpe":"cpe:/a:openbsd:openssh:3.9p1",
+			"name":"OpenSSH",
+			"users":{
+				"user1":{
+					"name":"alice",
+					"priv":"no"
+				}
+			},
+			"port":{
+				"type":"TCP",
+				"number":"22",
+				"ttl":"64",
+				"winsize":"8400",
+				"id":"incremental"				
+			},
+			"protocol":"SSH",
+			"cleartext":"True"
+		}
+	},
+	"firewall":{
+		"open":"21,22,25",
+		"closed":"80,443",
+		"filtered":"default"
+	}
+}
