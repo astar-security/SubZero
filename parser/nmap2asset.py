@@ -1,6 +1,26 @@
+#!/usr/bin/python3
+
 import json
+import ipaddress
 import xml.etree.ElementTree as ET
 import uuid
+import requests
+import argparse
+import os.path
+
+# de nada
+IPSTACK_API_KEY="6f77d543cd2422ae17ac5ca858202ca9"
+
+def getLocation(ipv4):
+    r = requests.get(f"http://api.ipstack.com/{ipv4}?access_key={IPSTACK_API_KEY}")
+    loc = r.json()
+    location = {}
+    try:
+        location["country"] = loc["country_name"]
+        location["city"] = loc["city"]
+    except:
+        pass
+    return location
 
 def checkCleartext(node):
     secured = ['ssh']
@@ -20,8 +40,10 @@ def nmap2json(host):
         if a.get('addrtype') == 'mac':
             asset['mac']['manuf'] = a.get('vendor')
         else:
-            asset['ipv4']['location'] = ""
-
+            asset['ipv4']['public'] = ipaddress.ip_address(asset['ipv4']['address']).is_global
+            if asset['ipv4']['public']:
+                asset['ipv4']['location'] = getLocation(asset["ipv4"]["address"])
+            
     # set fqdn
 
     # set os cpe
@@ -31,6 +53,8 @@ def nmap2json(host):
     asset['fqdn'] = ""
     asset['additional names'] = {}
     fqdn = set()
+    for hostname in host.find("hostnames").iter("hostname"):
+        fqdn.add(hostname.get("name"))
 
     # set applicative
     asset['applicative'] = {}
@@ -48,8 +72,9 @@ def nmap2json(host):
             asset['applicative'][thisapp]['port']['type'] = a.get('protocol')
             asset['applicative'][thisapp]['port']['number'] = a.get('portid')
             s = a.find('service')
-            # get all possible hostname
-            fqdn.add(s.get('hostname'))
+            netbios = s.get('hostname')
+            if netbios:
+                fqdn.add(netbios)
             p = s.get('product')
             v = s.get('version')
             asset['applicative'][thisapp]['name'] += (p if p else '')
@@ -68,9 +93,9 @@ def nmap2json(host):
     # reduce the possible fqdn
     counter = 0
     for i in fqdn:
-        if i and asset['fqdn'] == "" and len(i.split('.'))==3:
+        if asset['fqdn'] == "" and len(i.split('.'))==3:
             asset['fqdn'] = i
-        elif i:
+        else:
             asset['additional names']['name'+str(counter)] = i
             counter += 1
 
@@ -80,7 +105,23 @@ def nmap2json(host):
     f.close()
 
 
-tree = ET.parse("nmap-top100.xml")
-r = tree.getroot()
-for c in r.iter("host"):
-    nmap2json(c)
+def main():
+    parser = argparse.ArgumentParser(description='Convert Nmap XML format to json\
+            compatible with the SubZero Project', add_help=True)
+    parser.add_argument('-w', action="store", dest="path", default='.', 
+            help='A path to store the files. Default is current folder')
+    parser.add_argument('NMAP_XML_FILE', action="store",  
+            help='A nmap result file in xml format')
+    parser.add_argument('-g', '--geolocation', action="store_true",
+            help="Ask ipstack for the GPS location of the IP", default=False)
+    args = parser.parse_args()
+    if not os.path.isdir(args.path):
+        print('[!] Given path does not exist')
+        return 1
+    nmap = ET.parse(args.NMAP_XML_FILE)
+    r = nmap.getroot()
+    for host in r.iter("host"):
+        nmap2json(host)
+
+if __name__ == '__main__':
+    main()
