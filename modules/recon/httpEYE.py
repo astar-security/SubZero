@@ -10,8 +10,36 @@ import argparse
 import subprocess
 import os.path
 import xml.etree.ElementTree as ET
+from threading import Thread, RLock
+import time
 
-def find_target(nmap, target):
+PROGRESS = 0
+TOTAL = 0
+lock = RLock()
+
+class Cutycapt(Thread):
+
+    def __init__(self, url, filename):
+        Thread.__init__(self)
+        self.url = url
+        self.filename = filename
+
+    def run(self):
+        try:
+            subprocess.run(['cutycapt', f"--url={self.url}",
+                        f"--out={self.filename}",
+                        '--out-format=png', '--insecure'], timeout=100)
+            print(f"[+] {self.url} grabbing finished")
+        except subprocess.TimeoutExpired:
+            print(f"[-] {self.url} Timeout")
+        with lock:
+            global PROGRESS
+            global TOTAL
+            PROGRESS += 1
+            print(f"[*] Progress: {PROGRESS}/{TOTAL}")
+
+def find_target(nmap, target, distinguish):
+    global TOTAL
     r = nmap.getroot()
     for host in r.iter("host"):
         if host.find("status").attrib["state"] == "up":
@@ -30,15 +58,21 @@ def find_target(nmap, target):
                                 target[ip]["ports"].add((p.get("portid"),False))
                     for hostname in host.find("hostnames").iter("hostname"):
                         target[ip]["hostnames"].add(hostname.get("name"))
+    if distinguish:
+        for ip in target:
+            TOTAL += len(target[ip]["hostnames"])*len(target[ip]["ports"])
+    else:
+        for ip in target:
+            TOTAL += len(target[ip]["ports"])
 
 def take_pic(target, path, distinguish):
     # Progression counter
-    c = len(target)
-    ind = 1
-    print(f"[*] {c} targets to proceed")
+    global TOTAL
+    print(f"[*] {TOTAL} targets to proceed")
     for t in target:
         print(t,target[t])
 
+    threads = []
     # for each host
     for ip in target:
         # for each hostname of the host
@@ -51,21 +85,16 @@ def take_pic(target, path, distinguish):
                 mode = ["http","https"][port[1]]
                 print(f"[*] Grabbing {host} on port {port[0]} with {mode}...")
                 url = f"{mode}://{host}:{port[0]}"
-                try:
-                    # Grab
-                    filename = f"{path}/{ip}-{host}-{port[0]}_{mode}.png"
-                    if ip == host:
-                        filename = f"{path}/{ip}-{port[0]}_{mode}.png"
-                    subprocess.run(['cutycapt', f"--url={url}", 
-                        f"--out={filename}", 
-                        '--out-format=png', '--insecure'], timeout=10)
-                    print('[+] Success')
-                except subprocess.TimeoutExpired:
-                    print('[-] Timeout')
-                    continue
-        # Progression in %
-        print(f"[*] Progress : {ind}/{c}")
-        ind += 1
+                # Grab
+                filename = f"{path}/{ip}-{host}-{port[0]}_{mode}.png"
+                if ip == host:
+                    filename = f"{path}/{ip}-{port[0]}_{mode}.png"
+                threads.append(Cutycapt(url, filename))
+    for t in threads:
+        t.start()
+        time.sleep(1)
+    for t2 in threads:
+        t2.join()
 
 def main():
     parser = argparse.ArgumentParser(description='Spread cutycapt over a nmap '\
@@ -78,11 +107,13 @@ def main():
             help="Capture for each hostname of the IP address", default=False)
     args = parser.parse_args()
     if not os.path.isdir(args.path):
-        print('[!] Given path does not exist')
-        return 1
+        try:
+            subprocess.run(['mkdir', "-p", args.path])
+        except Exception as e:
+            print(f"[!] ERROR : {e}")
     nmap = ET.parse(args.NMAP_XML_FILE)
     target = {}
-    find_target(nmap, target)
+    find_target(nmap, target, args.distinguish)
     take_pic(target, args.path, args.distinguish)
 
 if __name__ == '__main__':

@@ -25,6 +25,6 @@ Feel free to contact me at contact[at}astar{dot]services
 
 
 TODO:
-- include brutespray like with patator
-- include eyewitness like
+- ~include brutespray like with patator~
+- ~include eyewitness like~
 - include whatportis
