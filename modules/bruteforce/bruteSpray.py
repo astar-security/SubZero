@@ -33,6 +33,8 @@ class Patator(Thread):
             self.ssh_login()
         if self.proto in ("telnet", "all"):
             self.telnet_login()
+        if self.proto in ("snmp", "all"):
+            self.snmp_login()
         with lock:
             global PROGRESS
             global TOTAL
@@ -40,6 +42,13 @@ class Patator(Thread):
             print(f"[+] {self.ip}:{self.port} brute finished")
             print(f"[*] Progress: {PROGRESS}/{TOTAL}")
 
+    def snmp_login(self):
+        result = subprocess.run(['patator', f"{self.proto}_login", f"port={self.port}",
+                        f"host={self.ip}", "community=FILE0", f"0={self.passwords}",
+                        "version=2", "-l", self.path, "-L",
+                        f"{self.proto}-{self.ip}-{self.port}" ],
+                        capture_output=True)
+        print(str(result.stderr))
 
     def ssh_login(self):
         result = subprocess.run(['patator', f"{self.proto}_login", f"port={self.port}",
@@ -119,7 +128,7 @@ def main():
     parser.add_argument('-P', action="store", dest="passwords",
             help="A passwords wordlist")  
     parser.add_argument('-s', action="store", dest="service", 
-            help="The service to attack. Default is all. Possible are snmp", default="all")   
+            help="The service to attack. Default is all. Possible are snmp,ssh,telnet", default="all")   
     args = parser.parse_args()
     """
     if not os.path.isdir(args.path):
@@ -131,4 +140,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
