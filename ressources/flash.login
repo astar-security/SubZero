@@ -1,3 +1,4 @@
 admin
+user
 root
 test

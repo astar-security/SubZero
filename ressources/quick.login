@@ -1,5 +1,7 @@
 admin
+sa
 Admin
+anonymous
 root
 Administrator
 administrator
@@ -7,8 +9,6 @@ guest
 manager
 monitor
 support
-Support
 test
-Test
 operator
 adm
