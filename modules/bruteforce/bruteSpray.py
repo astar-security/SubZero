@@ -13,8 +13,8 @@ import xml.etree.ElementTree as ET
 from threading import Thread, RLock
 
 PROGRESS = 0
+ALL = ("ssh", "snmp", "vnc", "mysql", "mssql", "telnet", "ftp")
 TOTAL = 0
-ALL = ("ssh", "telnet")
 lock = RLock()
 
 class Patator(Thread):
@@ -35,6 +35,16 @@ class Patator(Thread):
             self.telnet_login()
         if self.proto in ("snmp", "all"):
             self.snmp_login()
+        if self.proto in ("mssql", "all"):
+            self.mssql_login()
+        if self.proto in ("ftp", "all"):
+            self.ftp_login()
+        if self.proto in ("vnc", "all"):
+            self.vnc_login()
+        if self.proto in ("mysql", "all"):
+            self.mysql_login()
+
+
         with lock:
             global PROGRESS
             global TOTAL
@@ -45,25 +55,48 @@ class Patator(Thread):
     def snmp_login(self):
         result = subprocess.run(['patator', f"{self.proto}_login", f"port={self.port}",
                         f"host={self.ip}", "community=FILE0", f"0={self.passwords}",
-                        "version=2", "-l", self.path, "-L",
-                        f"{self.proto}-{self.ip}-{self.port}" ],
+                        "version=2", f"--csv={self.path}/{self.proto}-{self.ip}-{self.port}" ],
                         capture_output=True)
-        print(str(result.stderr))
+
+        result = subprocess.run(['patator', f"{self.proto}_login", f"port={self.port}",
+                        f"host={self.ip}", "user=FILE0", f"0={self.logins}", "auth_key=FILE1",
+                        f"1={self.passwords}", "version=3", 
+                        f"--csv={self.path}/{self.proto}3-{self.ip}-{self.port}" ],
+                        capture_output=True)
 
     def ssh_login(self):
         result = subprocess.run(['patator', f"{self.proto}_login", f"port={self.port}",
                         f"host={self.ip}", "user=FILE0", "password=FILE1", f"0={self.logins}",
-                        f"1={self.passwords}", "-l", self.path, "-L",
-                        f"{self.proto}-{self.ip}-{self.port}" ],
+                        f"1={self.passwords}", f"--csv={self.path}/{self.proto}-{self.ip}-{self.port}" ],
                         capture_output=True)
-        print(str(result.stderr))
 
     def telnet_login(self):
         result = subprocess.run(['patator', f"{self.proto}_login", f"port={self.port}",
             f"host={self.ip}", "inputs='FILE0\nFILE1'", "prompt_re='Username:|Password:'", 
-            f"0={self.logins}", f"1={self.passwords}", "-l", self.path, "-L"
-            f"{self.proto}-{self.ip}-{self.port}" ], capture_output=True)
-        print(str(result.stderr))
+            f"0={self.logins}", f"1={self.passwords}", 
+            f"--csv={self.path}/{self.proto}-{self.ip}-{self.port}" ], capture_output=True)
+
+    def vnc_login(self):
+        result = subprocess.run(['patator', f"{self.proto}_login", f"port={self.port}",
+            f"host={self.ip}", "password=FILE0", f"0={self.passwords}", 
+            f"--csv={self.path}/{self.proto}-{self.ip}-{self.port}" ], capture_output=True)
+
+    def ftp_login(self):
+        result = subprocess.run(['patator', f"{self.proto}_login", f"port={self.port}",
+            f"host={self.ip}", "user=FILE0", "password=FILE1", f"0={self.logins}", f"1={self.passwords}", 
+            f"--csv={self.path}/{self.proto}-{self.ip}-{self.port}" ], capture_output=True)
+
+    def mssql_login(self):
+        result = subprocess.run(['patator', f"{self.proto}_login", f"port={self.port}",
+            f"host={self.ip}", "user=FILE0", "password=FILE1", f"0={self.logins}", f"1={self.passwords}", 
+            f"--csv={self.path}/{self.proto}-{self.ip}-{self.port}" ], capture_output=True)
+    
+    def mysql_login(self):
+        result = subprocess.run(['patator', f"{self.proto}_login", f"port={self.port}",
+            f"host={self.ip}", "user=FILE0", "password=FILE1", f"0={self.logins}", f"1={self.passwords}", 
+            f"--csv={self.path}/{self.proto}-{self.ip}-{self.port}" ], capture_output=True)
+
+
 
 def find_target(nmap, proto):
     print("[*] Parsing the NMAP file ...")
@@ -128,13 +161,12 @@ def main():
     parser.add_argument('-P', action="store", dest="passwords",
             help="A passwords wordlist")  
     parser.add_argument('-s', action="store", dest="service", 
-            help="The service to attack. Default is all. Possible are snmp,ssh,telnet", default="all")   
+            help="The service to attack. Default is all. Possible are snmp,ssh,telnet,ftp,vnc,mssql", default="all")   
     args = parser.parse_args()
-    """
     if not os.path.isdir(args.path):
-        print('[!] Given path does not exist')
-        return 1
-    """
+        print('[!] Given path does not exist, creating it...')
+        os.mkdir(args.path)
+
     nmap = ET.parse(args.NMAP_XML_FILE)
     brute( find_target(nmap, args.service), args.path, args.logins, args.passwords )
 
