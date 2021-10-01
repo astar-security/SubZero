@@ -1,5 +1,12 @@
 #!/usr/bin/python3
 
+"""
+Part of SubZero project: 
+Written by David SORIA (Sibwara, dsoria@astar.org) in 2021
+Do not sell in a commercial package
+"""
+
+
 from cpe import CPE
 import argparse
 import requests
