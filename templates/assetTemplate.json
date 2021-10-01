@@ -1,0 +1,43 @@
+{
+	"id":"an unique uuid",
+	"mac":"a main MAC address",
+	"additionnal mac":{
+		"a_mac":"another MAC address where the asset can be reached",
+		"a_mac":"another MAC address where the asset can be reached"
+	},
+	"ip":"a main IP address",
+	"additionnal ip":{
+		"a_ip":"another ip address where the asset can be reached",
+		"a_ip":"another ip address where the asset can be reached"
+	},
+	"fqdn":" the main name of the asset",
+	"additionnal names":{
+		"a_name":"another name which describe the asset",
+		"a_name":"another name which describe the asset"
+	},
+	"os":"the operating system of the asset",
+	"os users":{
+		"o_user":"a username valid on the operating system",
+		"o_user":"a username valid on the operating system"
+	},
+	"applicative":{
+		"application":{
+			"name":"the name of an application installed on the operating system",
+			"users":{
+				"a_user":"the name of a valid user on the application",
+				"a_user":"the name of a valid user on the application"
+			},
+			"port":{
+				"type":"TCP or UDP",
+				"number":"the port number",
+				"ttl":"time to live if TCP",
+				"winsize":"window size if TCP",
+				"id":"0, incremental or random if TCP"				
+			},
+			"protocols":{
+				"a_prot":"a protocol used by the application like: TLS, HTTP, SMTP, etc.",
+				"a_prot":"a protocol used by the application like: TLS, HTTP, SMTP, etc."
+			}
+		}
+	}
+}
