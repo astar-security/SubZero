@@ -28,22 +28,33 @@ class Patator(Thread):
         self.logins = logins
         self.passwords= passwords
 
+    def output(self, r):
+        lines = r.stderr.decode('utf-8').split('\n')
+        messages = set()
+        for line in lines:
+            part = line.split('|')
+            if len(part) == 4 and part[3] != ' mesg':
+                messages.add( part[3].strip() )
+        print(f"[*] {self.ip} messages were:")
+        for m in messages:
+            print(m)
+
+
     def run(self):
         if self.proto in ("ssh", "all"):
-            self.ssh_login()
+            self.output(self.ssh_login())
         if self.proto in ("telnet", "all"):
-            self.telnet_login()
+            self.output(self.telnet_login())
         if self.proto in ("snmp", "all"):
-            self.snmp_login()
+            self.output(self.snmp_login())
         if self.proto in ("mssql", "all"):
-            self.mssql_login()
+            self.output(self.mssql_login())
         if self.proto in ("ftp", "all"):
-            self.ftp_login()
+            self.output(self.ftp_login())
         if self.proto in ("vnc", "all"):
-            self.vnc_login()
+            self.output(self.vnc_login())
         if self.proto in ("mysql", "all"):
-            self.mysql_login()
-
+            self.output(self.mysql_login())
 
         with lock:
             global PROGRESS
@@ -57,12 +68,14 @@ class Patator(Thread):
                         f"host={self.ip}", "community=FILE0", f"0={self.passwords}",
                         "version=2", f"--csv={self.path}/{self.proto}-{self.ip}-{self.port}" ],
                         capture_output=True)
+        return result
 
         result = subprocess.run(['patator', f"{self.proto}_login", f"port={self.port}",
                         f"host={self.ip}", "user=FILE0", f"0={self.logins}", "auth_key=FILE1",
                         f"1={self.passwords}", "version=3", 
                         f"--csv={self.path}/{self.proto}3-{self.ip}-{self.port}" ],
                         capture_output=True)
+        return result
 
     def ssh_login(self):
         result = subprocess.run(['patator', f"{self.proto}_login", f"port={self.port}",
@@ -75,26 +88,31 @@ class Patator(Thread):
             f"host={self.ip}", "inputs='FILE0\nFILE1'", "prompt_re='Username:|Password:'", 
             f"0={self.logins}", f"1={self.passwords}", 
             f"--csv={self.path}/{self.proto}-{self.ip}-{self.port}" ], capture_output=True)
+        return result
 
     def vnc_login(self):
         result = subprocess.run(['patator', f"{self.proto}_login", f"port={self.port}",
             f"host={self.ip}", "password=FILE0", f"0={self.passwords}", 
             f"--csv={self.path}/{self.proto}-{self.ip}-{self.port}" ], capture_output=True)
+        return result
 
     def ftp_login(self):
         result = subprocess.run(['patator', f"{self.proto}_login", f"port={self.port}",
             f"host={self.ip}", "user=FILE0", "password=FILE1", f"0={self.logins}", f"1={self.passwords}", 
             f"--csv={self.path}/{self.proto}-{self.ip}-{self.port}" ], capture_output=True)
+        return result
 
     def mssql_login(self):
         result = subprocess.run(['patator', f"{self.proto}_login", f"port={self.port}",
             f"host={self.ip}", "user=FILE0", "password=FILE1", f"0={self.logins}", f"1={self.passwords}", 
             f"--csv={self.path}/{self.proto}-{self.ip}-{self.port}" ], capture_output=True)
-    
+        return result
+
     def mysql_login(self):
         result = subprocess.run(['patator', f"{self.proto}_login", f"port={self.port}",
             f"host={self.ip}", "user=FILE0", "password=FILE1", f"0={self.logins}", f"1={self.passwords}", 
             f"--csv={self.path}/{self.proto}-{self.ip}-{self.port}" ], capture_output=True)
+        return result
 
 
 
@@ -158,6 +176,7 @@ def brute(target, path, logins, passwords):
 
 
 def main():
+    global ALL
     parser = argparse.ArgumentParser(description='Spread patator over a nmap '\
             'result to bruteforce services', add_help=True)
     parser.add_argument('-w', action="store", dest="path", default='.', 
@@ -169,7 +188,7 @@ def main():
     parser.add_argument('-P', action="store", dest="passwords",
             help="A passwords wordlist")  
     parser.add_argument('-s', action="store", dest="service", 
-            help="The service to attack. Default is all. Possible are snmp,ssh,telnet,ftp,vnc,mssql", default="all")   
+                        help=f"The service to attack. Default is all. Possible are : {ALL}", default="all")   
     args = parser.parse_args()
     if not os.path.isdir(args.path):
         print('[!] Given path does not exist, creating it...')
