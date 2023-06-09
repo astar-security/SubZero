@@ -28,3 +28,18 @@ options:
   -s SERVICE     The service to attack. Default is all. Possible are :
                  ('ssh', 'snmp', 'vnc', 'mysql', 'mssql', 'telnet', 'ftp')
 ```
+
+## mixedcase.py
+
+- Input : a password (whatever the case)
+- Doing : compute avery case variations
+- Output : all the variations are printed to stdout
+
+```
+python3 mixedcase.py David
+```
+Dumb script to compute all the case variation of an input word.  
+Useful if you cracked a LM hash and want to construct the possible candidates for cracking the NT version :
+```
+for i in $(cat test); do python3 mixedcase.py $i > wl; john --format=NT --wordlist=wl HASHDUMPFILE; done
+```
