@@ -1,0 +1,13 @@
+admin
+Admin
+anonymous
+root
+Administrator
+administrator
+guest
+manager
+monitor
+support
+test
+operator
+adm
