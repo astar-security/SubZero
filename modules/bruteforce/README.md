@@ -43,3 +43,20 @@ Useful if you cracked a LM hash and want to construct the possible candidates fo
 ```
 for i in $(cat test); do python3 mixedcase.py $i > wl; john --format=NT --wordlist=wl HASHDUMPFILE; done
 ```
+
+ ## dns_dictionnary_asciize.py
+ 
+- Input : a file with one word per line
+- Doing : transform special character (é, à, ö, ...) to simple ascii (e, a, o)
+- Output : a file (same name with _asciized_ extension) with the words transormed
+ 
+ ```
+ python3 dns_dictionnary_asciize.py WORDLIST.txt
+ ```
+
+Useful for subdomain enumeration through business context :
+```
+$ cewl -v -w wordlist_from_site.txt https://www.astar.org
+$ python3 dns_dictionnary_asciize.py wordlist_from_site.txt
+$ dnsenum astar.org -f wordlist_from_site.txt_asciized
+```
