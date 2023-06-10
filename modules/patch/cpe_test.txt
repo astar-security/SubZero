@@ -1,0 +1,6 @@
+cpe:/a:microsoft:sql_server:10.50.2500.0
+cpe:/a:mysql:mysql:5.5.8
+cpe:/a:genivia:gsoap:2.7
+cpe:/a:virata:emweb:6.2.1
+cpe:/a:hp:ftp_print_server:3.0
+cpe:/a:microsoft:internet_information_server:6.0
