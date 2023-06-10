@@ -29,7 +29,7 @@ options:
                  ('ssh', 'snmp', 'vnc', 'mysql', 'mssql', 'telnet', 'ftp')
 ```
 
-## mixedcase.py
+## mixedcase
 
 - Input : a password (whatever the case)
 - Doing : compute avery case variations
@@ -44,7 +44,7 @@ Useful if you cracked a LM hash and want to construct the possible candidates fo
 for i in $(cat test); do python3 mixedcase.py $i > wl; john --format=NT --wordlist=wl HASHDUMPFILE; done
 ```
 
- ## dns_dictionnary_asciize.py
+## dns_dictionnary_asciize
  
 - Input : a file with one word per line
 - Doing : transform special character (é, à, ö, ...) to simple ascii (e, a, o)
